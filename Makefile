@@ -16,7 +16,7 @@ uninstall:
 	@pip uninstall generate_taxonomy_tree_by_taxids
 
 test-run:
-	@xvfb-run python3 generate_taxonomy_tree_by_taxids.py --output_directory_path ./lala \
+	@xvfb-run python3 -m generate_taxonomy_tree_by_taxids --output_directory_path ./test-out \
 												 --image_names_prefix phylome_0001 \
 												 --taxonomy_ids 9606 \
 																10090 \
