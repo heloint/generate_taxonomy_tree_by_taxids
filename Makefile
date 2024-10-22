@@ -19,7 +19,8 @@ uninstall:
 
 test-run:
 	@xvfb-run python3 -m generate_taxonomy_tree_by_taxids --output_directory_path ./test-out \
-												 --image_names_prefix phylome_0001 \
+												 --image_names_prefix example_taxa_tree \
+    											--add_titles \
 												 --taxonomy_ids 9606 \
 																10090 \
 																3702 \
