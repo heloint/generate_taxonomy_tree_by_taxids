@@ -26,6 +26,7 @@ class GenerateTaxonomyTreeByTaxidsArgs:
     taxonomy_ids: list[int]
     image_names_prefix: str
     output_directory_path: str
+    add_titles: bool
 
     @classmethod
     def get_arguments(cls) -> GenerateTaxonomyTreeByTaxidsArgs:
@@ -39,22 +40,26 @@ class GenerateTaxonomyTreeByTaxidsArgs:
             "--taxonomy_ids",
             type=int,
             required=True,
-            help="",
+            help="List of taxonomy IDs to generate the taxonomy tree.",
             nargs="+",
         )
         parser.add_argument(
             "--image_names_prefix",
             type=str,
             required=True,
-            help="",
+            help="Name prefix for the generated output .png images.",
             default=f"{monotonic()}",
         )
         parser.add_argument(
             "--output_directory_path",
             type=str,
             required=True,
-            help="",
+            help="The output directory path for the generated .png images.",
             default="./out",
+        )
+        parser.add_argument(
+            "--add_titles",
+            action='store_true',
         )
         return GenerateTaxonomyTreeByTaxidsArgs(**vars(parser.parse_args()))
 
@@ -233,7 +238,7 @@ def add_titles_to_tree_style(
     )
 
 
-def _layout(node):
+def _layout(node: CustomTree) -> None:
     if node.is_leaf():
         N = AttrFace("name", fsize=18, fstyle="italic")
         faces.add_face_to_node(N, node, 0, aligned=True, position="aligned")
@@ -241,6 +246,7 @@ def _layout(node):
 
 def _get_default_tree_style(
     legend_labels: list[ClassLevelColorPair],
+    add_titles: bool,
     mode: Literal["circular", "rectangular"] = "circular",
 ) -> TreeStyle:
     ts = TreeStyle()
@@ -263,11 +269,12 @@ def _get_default_tree_style(
     ts.draw_guiding_lines = True
     ts.allow_face_overlap = True
 
-    add_titles_to_tree_style(
-        ts,
-        "Species content mapped to the NCBI taxonomy tree",
-        f"({mode} representation, grouped on class level)",
-    )
+    if add_titles:
+        add_titles_to_tree_style(
+            ts,
+            "Species content mapped to the NCBI taxonomy tree",
+            f"({mode} representation, grouped on class level)",
+        )
 
     for legend in legend_labels:
         add_legend_pair_face_to_tree_style(
@@ -332,7 +339,7 @@ def main() -> int:
         taxa_groups, colors
     )
     circular_tree_style = _get_default_tree_style(
-        legend_labels, mode="circular"
+        legend_labels, add_titles=args.add_titles, mode="circular"
     )
     _create_image_file(
         tree,
@@ -342,7 +349,7 @@ def main() -> int:
     )
 
     rectangular_tree_style = _get_default_tree_style(
-        legend_labels, mode="rectangular"
+        legend_labels, add_titles=args.add_titles, mode="rectangular"
     )
     _create_image_file(
         tree,
