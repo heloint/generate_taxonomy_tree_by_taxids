@@ -4,10 +4,12 @@
 		test-run
 
 install:
+	@rm -rf *.egg-info build
 	@pip install .
 	@generate_taxonomy_tree_by_taxids --help
 
 install-editable:
+	@rm -rf *.egg-info build
 	@pip install -e .
 	@generate_taxonomy_tree_by_taxids --help
 
