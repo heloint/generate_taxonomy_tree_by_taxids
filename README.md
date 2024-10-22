@@ -112,7 +112,12 @@ xvfb-run python3 -m generate_taxonomy_tree_by_taxids \
 ### 3.2 Result images
 
 **Circular image**
+
+![circular image exmaple](https://raw.githubusercontent.com/heloint/generate_taxonomy_tree_by_taxids/refs/heads/main/assets/example_taxa_tree_circular.png)
+
 **Rectangular image**
+
+![rectangular image exmaple](https://raw.githubusercontent.com/heloint/generate_taxonomy_tree_by_taxids/refs/heads/main/assets/example_taxa_tree_rectangular.png)
 
 ---
 
