@@ -13,6 +13,10 @@ Generates images of taxonomy trees based on the given list of taxonomy identifie
  - [Editable installation](#editable-installation)
  - [Uninstall](#uninstall)
 
+[Execution](#execution)
+ - [Command example](#command-example)
+ - [Result images](#result-images)
+
 [Citations / Acknowledgments](#citations-acknowledgments)
 
 ---
@@ -57,9 +61,9 @@ make uninstall
 
 ---
 
-## 3. Execution example <a id="execution-example" />
+## 3. Execution <a id="execution" />
 
-### 3.1 Command
+### 3.1 Command example <a id="command-example" />
 
 ```bash
 xvfb-run python3 -m generate_taxonomy_tree_by_taxids \
@@ -109,7 +113,7 @@ xvfb-run python3 -m generate_taxonomy_tree_by_taxids \
 ```
 
 
-### 3.2 Result images
+### 3.2 Result images <a id="result-images" />
 
 **Circular image**
 
