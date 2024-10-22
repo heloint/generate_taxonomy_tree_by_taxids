@@ -30,7 +30,10 @@ class GenerateTaxonomyTreeByTaxidsArgs:
     @classmethod
     def get_arguments(cls) -> GenerateTaxonomyTreeByTaxidsArgs:
         parser = argparse.ArgumentParser(
-            description="Generate both circular and rectangular styled taxonomy tree images by the given taxonomy ids."
+            description=(
+                "Generate both circular and rectangular styled"
+                " taxonomy tree images by the given taxonomy ids."
+            )
         )
         parser.add_argument(
             "--taxonomy_ids",
@@ -62,7 +65,9 @@ class ClassLevelColorPair(TypedDict):
 
 
 class CustomTree(Tree):
-    def _set_single_node_style(self, group: list[int], node_style: NodeStyle) -> None:
+    def _set_single_node_style(
+        self, group: list[int], node_style: NodeStyle
+    ) -> None:
         for leaf in self.iter_leaves():
             if leaf.name == str(group[0]):
                 leaf.set_style(node_style)
@@ -87,14 +92,17 @@ class CustomTree(Tree):
             )
             if not isinstance(common_ancestors, TreeNode):
                 raise TypeError(
-                    "Returned common_ancestors result is not instance of the TreeNode class."
+                    "Returned common_ancestors result"
+                    " is not instance of the TreeNode class."
                 )
             common_ancestors.set_style(node_style)
 
     def rename_leaves_for_taxa_names(self) -> None:
         ncbi = NCBITaxa()
         for leaf in self.iter_leaves():
-            translation_res: dict[int, str] = ncbi.get_taxid_translator([leaf.name])
+            translation_res: dict[int, str] = ncbi.get_taxid_translator(
+                [leaf.name]
+            )
             taxa_name: str = translation_res[int(leaf.name)]
             leaf.name = taxa_name
             leaf.set_style
@@ -123,15 +131,20 @@ def get_taxa_tree_by_taxids(taxids: Iterable[int]) -> str:
     return newick
 
 
+def _get_random_rgb_color_part() -> int:
+    return random.randint(160, 255)
+
+
 def _generate_unique_hex_colors(n: int) -> list[str]:
     colors: set[str] = set()
     while len(colors) < n:
-        rand = lambda: random.randint(160, 255)
-        rgb_color_part_1: int = rand()
-        rgb_color_part_2: int = rand()
-        rgb_color_part_3: int = rand()
+        rgb_color_part_1: int = _get_random_rgb_color_part()
+        rgb_color_part_2: int = _get_random_rgb_color_part()
+        rgb_color_part_3: int = _get_random_rgb_color_part()
         hex_color: str = (
-            f"#{rgb_color_part_1:02x}{rgb_color_part_2:02x}{rgb_color_part_3:02x}"
+            f"#{rgb_color_part_1:02x}"
+            f"{rgb_color_part_2:02x}"
+            f"{rgb_color_part_3:02x}"
         )
         colors.add(hex_color)
     return list(colors)
@@ -179,23 +192,43 @@ def get_legend_textface_box_for_color(color: str) -> TextFace:
     return textface_box
 
 
-def add_legend_pair_face_to_tree_style(ts: TreeStyle, color: str, title: str) -> None:
-    textface_box: TextFace = get_legend_textface_box_for_color(color)
-    ts.legend.add_face(textface_box, column=0)
-    ts.legend.add_face(TextFace(title, fsize=20), column=1)
+def add_legend_pair_face_to_tree_style(
+    ts: TreeStyle, color: str, title: str
+) -> None:
+    color_box: TextFace = get_legend_textface_box_for_color(color)
+    ts.legend.add_face(color_box, column=0)
+
+    legend_box = TextFace(f"  {title}", fsize=20)
+    ts.legend.add_face(legend_box, column=1)
 
 
-def add_title_to_tree_style(tree_style: TreeStyle, title: str) -> None:
-    textface_box = TextFace(
+def add_titles_to_tree_style(
+    tree_style: TreeStyle, title: str, subtitle: str | None
+) -> None:
+    title_textface_box = TextFace(
         title,
         fsize=24,
     )
-    textface_box.margin_top = 10
-    textface_box.margin_right = 10
-    textface_box.margin_left = 10
-    textface_box.margin_bottom = 10
+    title_textface_box.margin_top = 10
+    title_textface_box.margin_right = 10
+    title_textface_box.margin_left = 10
+    title_textface_box.margin_bottom = 10
+
+    subtitle_textface_box = TextFace(
+        subtitle,
+        fsize=20,
+    )
+    subtitle_textface_box.margin_top = 10
+    subtitle_textface_box.margin_right = 10
+    subtitle_textface_box.margin_left = 10
+    subtitle_textface_box.margin_bottom = 10
+
     tree_style.title.add_face(
-        textface_box,
+        title_textface_box,
+        column=0,
+    )
+    tree_style.title.add_face(
+        subtitle_textface_box,
         column=0,
     )
 
@@ -210,7 +243,6 @@ def _get_default_tree_style(
     legend_labels: list[ClassLevelColorPair],
     mode: Literal["circular", "rectangular"] = "circular",
 ) -> TreeStyle:
-
     ts = TreeStyle()
     ts.layout_fn = _layout
     ts.mode = "c"
@@ -231,8 +263,10 @@ def _get_default_tree_style(
     ts.draw_guiding_lines = True
     ts.allow_face_overlap = True
 
-    add_title_to_tree_style(
-        ts, f"Species content mapped to the NCBI taxonomy tree ({mode} representation)"
+    add_titles_to_tree_style(
+        ts,
+        "Species content mapped to the NCBI taxonomy tree",
+        f"({mode} representation, grouped on class level)",
     )
 
     for legend in legend_labels:
@@ -284,7 +318,9 @@ def main() -> int:
     tree: CustomTree = CustomTree(newick)
 
     leaf_names: list[str] = [leaf.name for leaf in tree.get_leaves()]
-    taxa_groups: dict[int, list[int]] = _get_class_taxa_groups(args.taxonomy_ids)
+    taxa_groups: dict[int, list[int]] = _get_class_taxa_groups(
+        args.taxonomy_ids
+    )
     formatted_taxa_groups: list[list[int]] = list(taxa_groups.values())
     tree.remove_intermediate_empty_single_nodes()
 
@@ -292,8 +328,12 @@ def main() -> int:
     tree.set_colors_by_groups(leaf_names, formatted_taxa_groups, colors)
     tree.rename_leaves_for_taxa_names()
 
-    legend_labels: list[ClassLevelColorPair] = _get_legend_labels(taxa_groups, colors)
-    circular_tree_style = _get_default_tree_style(legend_labels, mode="circular")
+    legend_labels: list[ClassLevelColorPair] = _get_legend_labels(
+        taxa_groups, colors
+    )
+    circular_tree_style = _get_default_tree_style(
+        legend_labels, mode="circular"
+    )
     _create_image_file(
         tree,
         circular_tree_style,
@@ -301,7 +341,9 @@ def main() -> int:
         output_filename=f"{args.image_names_prefix}_circular.png",
     )
 
-    rectangular_tree_style = _get_default_tree_style(legend_labels, mode="rectangular")
+    rectangular_tree_style = _get_default_tree_style(
+        legend_labels, mode="rectangular"
+    )
     _create_image_file(
         tree,
         rectangular_tree_style,
